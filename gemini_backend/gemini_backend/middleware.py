@@ -14,7 +14,7 @@ class JWTMiddleware:
         path = request.path
         public_paths = [
             '/auth/signup/', '/auth/send-otp/', '/auth/verify-otp',
-            '/auth/forgot-password/'
+            '/auth/forgot-password/','/webhook/stripe/','/payment/success/'
         ]
 
         if any(path.startswith(p) for p in public_paths):

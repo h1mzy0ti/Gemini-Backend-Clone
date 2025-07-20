@@ -101,8 +101,18 @@ REST_FRAMEWORK = {
     )
 }
 
+# Gemini API-KEY
+GEMINI_API_KEY = config("GEMINI_API_KEY")
+
+# Stripe config 
+STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY")
+STRIPE_PUBLIC_KEY = config("STRIPE_PUBLIC_KEY")
+STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET")
+STRIPE_PRO_PRICE_ID = config("STRIPE_PRO_PRICE_ID")
+DOMAIN = config("DOMAIN")
+
 # Celery 
-CELERY_BROKER_URL = 'redis//localhost:6379/0'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_TIMEZONE = 'Asia/Kolkata'
 

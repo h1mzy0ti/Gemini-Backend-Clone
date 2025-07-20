@@ -17,15 +17,24 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from user_auth.views import *
+from subscriptions.views import *
+from gemini_api.views import *
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('auth/signup/', UserSignup.as_view()),
     path('auth/send-otp/', SendOtp.as_view()),
     path('auth/verify-otp/', VerifyOTP.as_view()),
     path('auth/forgot-password/', ForgotPassword.as_view()),
     path('auth/change-password/',ChangePassword.as_view()),
-    path('user/me/', UserDetails.as_view())
-    
+    path('user/me/', UserDetails.as_view()),
+
+    path('subscribe/pro/', ProSubscription.as_view()),
+    path('webhook/stripe/', StripeWebhook.as_view()),
+    path('subscription/status/', SubscriptionStatus.as_view()),
+    path('payment/success/', PaymentSuccess.as_view()),
+
+    path('chatroom/', ChatRoomCreatList.as_view()),
+    path('chatroom/<int:id>/', ChatRoomDeleteDetail.as_view()),
+    path('chatroom/<int:id>/message/', ChatMessageSendRecieve.as_view()),
 
 ]
