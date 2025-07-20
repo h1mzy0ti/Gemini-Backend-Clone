@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-47z-z%+#%a-oj1p@dcaut@ejk+t70%+^9!_gn8#cd)t9j97x&j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['gemini-backend-clone-xyqy.onrender.com']
 
 
 # Application definition
