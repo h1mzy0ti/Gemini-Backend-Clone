@@ -68,7 +68,7 @@ class ChatMessageSendRecieve(APIView):
     def post(self, request, id):
         content = request.data.get("content", "").strip()
         if not content:
-            return Response({"error": "Empty message"}, status=400)
+            return Response({"error": "Empty message"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             room = ChatRoom.objects.get(id=id, user=request.user)
@@ -80,31 +80,37 @@ class ChatMessageSendRecieve(APIView):
         today = timezone.now().date()
 
         if sub and sub.plan == 'basic':
-            if sub.last_reset != today:
+            # Ensure last_reset is not None (backward compatibility)
+            if not sub.last_reset or sub.last_reset != today:
                 sub.daily_message_count = 0
                 sub.last_reset = today
                 sub.save()
 
             if sub.daily_message_count >= 5:
-                return Response({"error": "Daily message limit reached"}, status=status.HTTP_402_PAYMENT_REQUIRED)
+                return Response(
+                    {"error": "Daily message limit reached for Basic plan"},
+                    status=status.HTTP_402_PAYMENT_REQUIRED
+                )
 
             sub.daily_message_count += 1
             sub.save()
 
-        # Save user's message
+        # Save the user's message
         Message.objects.create(chatroom=room, sender="user", content=content)
 
-        # Call Gemini asynchronously via Celery
+        # Enqueue Gemini response task via Celery
         handle_gemini_response.delay(room.id, content)
 
-        return Response({"status": "Message sent, Gemini response queued, refer a get request in the same endpoint"}, status=status.HTTP_201_CREATED)
+        return Response({
+            "status": "Message sent. Gemini response is being processed. Call GET on this endpoint to retrieve it."
+        }, status=status.HTTP_201_CREATED)
 
     def get(self, request, id):
         try:
             room = ChatRoom.objects.get(id=id, user=request.user)
         except ChatRoom.DoesNotExist:
-            return Response({"error": "Chat room doesnt exist or Not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Chat room does not exist or not found"}, status=status.HTTP_404_NOT_FOUND)
 
         messages = Message.objects.filter(chatroom=room).order_by("timestamp")
         data = MessageSerializer(messages, many=True).data
-        return Response(data,status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)
