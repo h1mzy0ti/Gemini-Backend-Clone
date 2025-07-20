@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import ssl
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -126,6 +127,10 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_CONNECT_TIMEOUT": 5,
             "SOCKET_TIMEOUT": 5,
+            "SSL": True,
+            "CONNECTION_POOL_KWARGS": {
+                "ssl_cert_reqs": ssl.CERT_NONE,
+            },
         }
     }
 }
