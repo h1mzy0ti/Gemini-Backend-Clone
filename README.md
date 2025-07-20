@@ -18,6 +18,9 @@ This document outlines the deployment details for each component of the Gemini B
 
 > 🔗 See main project README for overall architecture and setup instructions.
 
+# Note
+
+Since I am using an free instance in Render it the instance will spin down with inactivity, which can delay requests by 50 seconds or more.
 ---
 
 ## 🔧 Environment Variables
