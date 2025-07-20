@@ -15,6 +15,7 @@ class Subscription(models.Model):
     is_active = models.BooleanField(default=False)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(blank=True, null=True)
+    last_reset = models.DateField(default=timezone.now)
 
     def __str__(self):
         return f"{self.user.email} - {self.plan}"
