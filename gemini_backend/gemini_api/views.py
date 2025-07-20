@@ -64,7 +64,6 @@ and recieving messages
 '''
 class ChatMessageSendRecieve(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request, id):
         content = request.data.get("content", "").strip()
         if not content:
@@ -75,35 +74,31 @@ class ChatMessageSendRecieve(APIView):
         except ChatRoom.DoesNotExist:
             return Response({"error": "Chat room does not exist or not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Rate limiting for Basic plan users
         sub = Subscription.objects.filter(user=request.user).first()
-        today = timezone.now().date()
 
+        # Rate limiting for Basic plan using cache
         if sub and sub.plan == 'basic':
-            # Ensure last_reset is not None (backward compatibility)
-            if not sub.last_reset or sub.last_reset != today:
-                sub.daily_message_count = 0
-                sub.last_reset = today
-                sub.save()
+            today_str = timezone.now().date().isoformat()
+            cache_key = f"daily_limit_user_{request.user.id}_{today_str}"
+            current_count = cache.get(cache_key, 0)
 
-            if sub.daily_message_count >= 5:
+            if current_count >= 5:
                 return Response(
                     {"error": "Daily message limit reached for Basic plan"},
                     status=status.HTTP_402_PAYMENT_REQUIRED
                 )
 
-            sub.daily_message_count += 1
-            sub.save()
+            cache.incr(cache_key)
+            cache.expire(cache_key, 86400)  # Set expiry to 24h
 
-        # Save the user's message
+        # Save message
         Message.objects.create(chatroom=room, sender="user", content=content)
-
-        # Enqueue Gemini response task via Celery
         handle_gemini_response.delay(room.id, content)
 
         return Response({
             "status": "Message sent. Gemini response is being processed. Call GET on this endpoint to retrieve it."
         }, status=status.HTTP_201_CREATED)
+
 
     def get(self, request, id):
         try:
