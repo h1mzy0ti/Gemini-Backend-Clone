@@ -64,6 +64,7 @@ and recieving messages
 '''
 class ChatMessageSendRecieve(APIView):
     permission_classes = [IsAuthenticated]
+
     def post(self, request, id):
         content = request.data.get("content", "").strip()
         if not content:
@@ -76,20 +77,22 @@ class ChatMessageSendRecieve(APIView):
 
         sub = Subscription.objects.filter(user=request.user).first()
 
-        # Rate limiting for Basic plan using cache
         if sub and sub.plan == 'basic':
             today_str = timezone.now().date().isoformat()
             cache_key = f"daily_limit_user_{request.user.id}_{today_str}"
-            current_count = cache.get(cache_key, 0)
 
-            if current_count >= 5:
-                return Response(
-                    {"error": "Daily message limit reached for Basic plan"},
-                    status=status.HTTP_402_PAYMENT_REQUIRED
-                )
+            current_count = cache.get(cache_key)
 
-            cache.incr(cache_key)
-            cache.expire(cache_key, 86400)  # Set expiry to 24h
+            if current_count is None:
+                # Initialize counter with expiry
+                cache.set(cache_key, 1, timeout=86400)
+            else:
+                if current_count >= 5:
+                    return Response(
+                        {"error": "Daily message limit reached for Basic plan"},
+                        status=status.HTTP_402_PAYMENT_REQUIRED
+                    )
+                cache.incr(cache_key)
 
         # Save message
         Message.objects.create(chatroom=room, sender="user", content=content)
