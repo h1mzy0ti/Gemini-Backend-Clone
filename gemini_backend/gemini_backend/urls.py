@@ -36,5 +36,6 @@ urlpatterns = [
     path('chatroom/', ChatRoomCreatList.as_view()),
     path('chatroom/<int:id>/', ChatRoomDeleteDetail.as_view()),
     path('chatroom/<int:id>/message/', ChatMessageSendRecieve.as_view()),
+    path('/api/reverse-words/', ReversedValid.as_view())
 
 ]

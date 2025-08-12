@@ -5,7 +5,7 @@ from rest_framework import status
 from django.core.cache import cache
 from django.utils import timezone
 from .models import ChatRoom, Message
-from .serializers import ChatRoomSerializer, MessageSerializer
+from .serializers import *
 from subscriptions.models import Subscription  # From subscriptions app
 from .tasks import handle_gemini_response
 
@@ -108,3 +108,19 @@ class ChatMessageSendRecieve(APIView):
         messages = Message.objects.filter(chatroom=room).order_by("timestamp")
         data = MessageSerializer(messages, many=True).data
         return Response(data,status=status.HTTP_200_OK)
+
+class ReversedValid(APIView):
+    def post(self,request):
+        data = request.data
+        if data.is_valid():
+            ReversedValidSerilizr = ReversedValidSerilizr(data)
+            return Response({"Message":"success"},status=status.HTTP_201_CREATED)
+        else:
+            return Response({"message":"error"},status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self,request):
+
+        returndata = request.query_param.get('text', '')
+
+        serilizer = ReversedValidSerilizr({'original': text})
+        return Response(serilizer.data)
